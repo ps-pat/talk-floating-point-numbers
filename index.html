@@ -4,91 +4,544 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>My Presentation</title>
+    <title>.1 + .2 = .3</title>
 
     <link rel="stylesheet" href="dist/reset.css">
     <link rel="stylesheet" href="dist/reveal.css">
     <link rel="stylesheet" href="dist/theme/mytheme.css" id="theme">
+
+    <style>
+      #bitwise dt {
+          flex-basis: 25%;
+          font-size: 35px;
+      }
+
+      #bitwise dd {
+          flex-basis: 75%;
+          font-size: 35px;
+      }
+
+      #logarith dt{
+          flex-basis: 15%;
+      }
+
+      #logarith dd {
+          flex-basis: 85%;
+      }
+
+      .reveal .slides section .fragment.semi-fade-out.very-faded.visible {
+          opacity: 0.05 ;
+      }
+    </style>
   </head>
   <body>
     <div class="reveal">
       <div class="slides">
         <section class="cover">
-          <h1>Title of the presentation</h1>
-          <h2>Author</h2>
-          <h3>Event</h3>
-          <h3>Date</h3>
+          <h1>Les nombres à virgule flottante: simple comme .1 + .2 = .3!</h1>
+          <h2>Patrick Fournier</h2>
+          <h3>Séminaires AESCM</h3>
+          <h3>9 novembre 2022</h3>
         </section>
         <section>
           <section class="title-slide">
-            <h1>Theme of the next vertical slides</h1>
-            <h2>Why not have a subtitle too?</h2>
+            <h1>Contexte et contre-exemples</h1>
+            <h2>Tu pensais qu'c'tait ça que c'tait...</h2>
           </section>
           <section>
-            <h1>Title of the slide</h1>
-            Some content in the form of an ordered list:
-            <ol>
-              <li>First very important point</li>
-              <li>Second less important point</li>
-            </ol>
+            <h1>Addition de nombre rationels</h1>
+            <pre><code class="language-julia hljs" data-trim data-noescape>
+                <span class="hljs-repl">julia&gt;</span>  0.5 + 0.25 == 0.75
+                true
+
+                <span class="hljs-repl">julia&gt;</span>  0.1 + 0.2 == 0.3
+                false
+            </code></pre>
+          </section>
+          <section>
+            <div class="r-stack">
+              <div class="fragment semi-fade-out" data-fragment-index="2">
+                <h1>Polynômes de Wilkinson<span class="reference">2</span></h1>
+                $$
+                \begin{align*}
+                w_n(x) &= \prod_{k = 1}^n (x - k)\\
+                &= (x - 1) (x - 2) \cdots (x - n)
+                \end{align*}
+                $$
+
+                \( \text{Racines}(w_n(x)) = 1, 2, \ldots, n \) &#x1f913;
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="2">
+                <pre><code class="language-julia hljs" data-trim data-noescape, style="font-size: 30px;">
+                    using Polynomials: Polynomial, fromroots
+                    import PolynomialRoots: roots
+
+                    wilkinson(n) = fromroots(1.0:n)
+
+                    roots(poly::Polynomial) = roots(poly.coeffs)
+                </code></pre>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="3">
+                <pre><code class="language-julia hljs" data-trim data-noescape style="font-size: 30px;">
+                    <span class="hljs-repl">julia&gt;</span> round.(roots(wilkinson(3)),
+                                        digits = 4)
+                    3-element Vector{ComplexF64}:
+                    3.0 - 0.0im
+                    2.0 + 0.0im
+                    1.0 + 0.0im
+              </code></pre>
+            </div>
+
+            <div class="fragment fade-in obox" data-fragment-index="4">
+              <pre><code class="language-julia hljs" data-trim data-noescape style="font-size: 30px;">
+                  <span class="hljs-repl">julia&gt;</span> w20 = wilkinson(20);
+
+                  <span class="hljs-repl">julia&gt;</span> round.(roots(w20), digits = 4)
+                  20-element Vector{ComplexF64}:
+                  19.9999 - 0.0im
+                  19.0006 + 0.0im
+                  17.9973 + 0.0im
+                  17.0074 + 0.0im
+                  15.9855 + 0.0im
+                  15.0204 + 0.0im
+                  13.9779 + 0.0im
+                  13.0184 + 0.0im
+                  &vellip;
+              </code></pre>
+            </div>
+
+            <div class="fragment fade-in obox" data-fragment-index="5">
+              <pre><code class="language-julia hljs" data-trim data-noescape style="font-size: 30px;">
+                  <span class="hljs-repl">julia&gt;</span> w20[19] -= 2^-23
+
+                  <span class="hljs-repl">julia&gt;</span> round.(roots(w20), digits = 4)
+                  20-element Vector{ComplexF64}:
+                  20.8469 - 0.0im
+                  19.5024 + 1.9403im
+                  19.5024 - 1.9403im
+                  13.9923 - 2.5188im
+                  13.9923 + 2.5188im
+                  16.7307 + 2.8126im
+                  16.7307 - 2.8126im
+                  11.7935 + 1.6521im
+                  &vellip;
+              </code></pre>
+            </div>
+
+            <div class="fragment fade-in obox" data-fragment-index="6">
+              <pre><code class="language-julia hljs" data-trim data-noescape style="font-size: 30px;">
+                  <span class="hljs-repl">julia&gt;</span>  round.(abs.(roots(w20)), digits = 4)
+                  20-element Vector{Float64}:
+                  20.8469
+                  19.5987
+                  19.5987
+                  14.2172
+                  14.2172
+                  16.9655
+                  16.9655
+                  11.9086
+                  11.9086
+                  10.1158
+                  &vellip;
+              </code></pre>
+            </div>
+
+            <aside class="notes">
+              <ul>
+                <li>À partir de n = 3, les racines, bien que réelles, ne sont pas exactes</li>
+                <li>À n = 20, une perturbation de l'ordre de 2^-23 suffit à faire en sorte que les racines ne soient plus séparables</li>
+                <li>Exemple du calcul des valeurs propres d'une matrice 20 par 20 à partir du polynôme caractéristique</li>
+              </ul>
+            </aside>
+          </section>
+          <section>
+            <div class="r-stack">
+              <div class="fragment semi-fade-out" data-fragment-index="2">
+                <h1>Suite logistique</h1>
+                $$
+                x_{n + 1} = r x_n (1 - x_n)
+                $$
+
+                <ul style="font-size:37px;">
+                  <li>Modélise la croissance d'une population</li>
+                  <li>\( r \): <em>potentiel biotique</em>, i.e. &#35; d'enfants</li>
+                  <li class="no-after">Si \( r = 4 \), deux comportements possibles:
+                    <ul>
+                      <li>\( x_0 \) rationel \( \Rightarrow \) périodicité (éventuellement)</li>
+                      <li class="semicolumn"> \( x_0 \) irrationel \( \Rightarrow \) chaos &#x1f32a;&#x1f32a;&#x1f32a;</li>
+                    </ul>
+                  </li>
+                  <li>Donc, \( x_0 \sim \mathcal U(0, 1) \Rightarrow \) chaos (p.s.)</li>
+                </ul>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="2">
+                <pre><code class="language-julia hljs" data-trim data-noescape>
+                    f(x) = 4.0 * x * (1.0 - x)
+
+                    function suite_log(n, x0)
+                        for _ ∈ 1:n
+                            x0 = f(x0)
+                        end
+
+                        x0
+                    end
+                </code></pre>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="3">
+                <pre><code class="language-julia hljs" data-trim data-noescape>
+                    <span class="hljs-repl">julia&gt;</span> using Random: Xoshiro
+                    <span class="hljs-repl">julia&gt;</span> x0 = rand(Xoshiro(45))
+                    <span class="hljs-repl">julia&gt;</span> suite_log(10000000, x0)
+                    0.0
+                </code></pre>
+              </div>
+
+              <div class="fragment fade-in" data-fragment-index="4">
+                <img src="assets/confused.gif" alt="Confusion" height="573">
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section>
+          <section class="title-slide">
+            <h1>IEEE 754</h1>
+          </section>
+          <section>
+            <div class="r-stack">
+              <div class="fragment semi-fade-out" data-fragment-index="2">
+                <h1>Nombre entiers: système binaire pondéré</h1>
+                <ul>
+                  <li>Ordinateur moderne: 64 bits</li>
+                  <li>\( 2^{64} \approx 10^{19} \) valeurs différentes</li>
+                  <li>Non signé: 64 bits pour le nombre (\( 0 \text{ à } 2^{64} -1 \))</li>
+                  <li>Signé: 63 bits pour le nombre, 1 bit pour le signe (\( -2^{63} \text{ à } 2^{63} - 1 \))</li>
+                </ul>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="2">
+                <h2>Exemples:</h2>
+                <ul>
+                  <li>\( 0_{10} = 0_2 \)</li>
+                  <li>\( 42_{10} = 0 \cdots 0101010_2 \)</li>
+                  <li>\( -42_{10} = 1 \cdots 1010110_2 \) (complément à 2)</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+          <section>
+            <h1>Opérations bit-à-bit</h1>
+            <dl id="bitwise">
+              <dt>Négation</dt><dd>\(\mathord{\sim} 5 = \mathord{\sim} 0 \cdots 101_2 = 1 \cdots 010_2 = -6 \)</dd>
+              <dt>Conjonction</dt><dd>\( 4 \mathbin{\&} 5 = 100_2 \mathbin{\&} 101_2 = 100_2 = 4 \)</dd>
+              <dt>Disjonction</dt><dd>\( 4 \mathbin{|} 5 = 100_2 \mathbin{|} 101_2 = 101_2 = 5 \)</dd>
+              <dt>Xor</dt><dd>\( 4 \mathbin{\verb|^|} 5 = 100_2 \mathbin{\verb|^|} 101_2 = 001_2 = 1 \)</dd>
+              <dt>Left shift</dt><dd>\( 2 \ll 1 = 10_2 \ll 1 = 100_2 = 4 \)</dd>
+              <dt>Right shift</dt><dd>\( 12 \gg 2 = 1100_2 \gg 2 = 11_2 = 3  \)</dd>
+            </dl>
+          </section>
+          <section>
+            <div class="r-stack">
+              <div class="fragment semi-fade-out" data-fragment-index="2">
+                <h1>Nombres réels: logarithme signé</h1>
+                <ul>
+                  <li>Réservé 1 bit pour le signe, \( n \) bits pour la partie entière et \( d \) bits pour la partie décimale</li>
+                  <li>Problème: précision fixe pour tout \( \mathbb R \)</li>
+                  <li>Solution: logarithme!</li>
+                </ul>
+                Pour un petit nombre \( \tau \), la <em>magnitude</em> de
+                \( A \in \mathbb R \) est
+                $$
+                L_A =
+                \begin{cases}
+                \log\lvert \tau A \rvert &\text{si } \lvert A \rvert > \frac{1}{\tau}\\
+                0 &\text{si } \lvert A \rvert \leq \frac{1}{\tau}\\
+                \end{cases}
+                $$
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="2">
+                <h2>Opérations arithmétiques:</h2>
+                <dl id="logarith">
+                  <dt>\( A \times B \)</dt><dd>\( L_A + L_B - L_{\tau} \)</dd>
+                  <dt>\( A + B \)</dt><dd> Basé sur l'identité \( A \left( 1 + \frac B A \right)\)</dd>
+                </dl>
+                <div style="text-align: center; font-weight: bold;">3 opérations pour une addition!</div>
+              </div>
+
+              <div class="fragment fade-in" data-fragment-index="3">
+                <img src="assets/obama-why.gif" alt="Obama shrugging" height="573">
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h1>Nombres à virgule flottante</h1>
+            Notation scientifique en base \( \beta = 2 \)
+            <br><br>
+            Standard IEEE 754 pour 64 bits (precision double):
+            <ul>
+              <li>1 bit pour le signe \( s \) (\( 0 \Rightarrow \) positif)</li>
+              <li>\( p = 53 \) bits pour la mantisse</li>
+              <li>11 bits pour l'exposant</li>
+            </ul>
+            <br>
+            <span class="fragment fade-in r-fit-text">Mais \( 1 + 53 + 11 = 65 > 64 \) &#x1f631;</span>
+          </section>
+          <section>
+            <div class="r-stack">
+              <div class="fragment semi-fade-out" data-fragment-index="2">
+            <h1>Technicalités &#x1f971;</h1>
+            <ul>
+              <li>Exposant biaisé: soustraire \( 2^{10} - 1 = 1023 \)</li>
+              <li>Bit implicite: en base 2, vaut 1 pour nombre <em>normalisé</em></li>
+              <li>Exposant \( e = 0 \) (donc -1023 avec biais) &amp; mantisse \( c \neq 0 \)
+                \( \Rightarrow \) bit implicite = 0; nombre <em>dénormalisé</em></li>
+            </ul>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="2">
+                <h2>Nombres spéciaux:</h2>
+                Dans tous les cas, \( e = 1 \cdots 1_2 \)
+                <br>
+                <ul>
+                  <li>\( +\infty \): \( s = 0, c = 0\)</li>
+                  <li>\( -\infty \): \( s = 1, c = 0\)</li>
+                  <li>NaNs: \( s \in \{ 0, 1 \}, c \neq 0 \)</li>
+                </ul>
+                <br>
+                IEEE 754 exige deux NaNs: qNaN (quiet) et sNan (signaling).
+              </div>
+            </div>
+          </section>
+          <section>
+            <h1>Nombres non représentables: overflow &amp; underflow</h1>
+            <pre><code class="language-julia hljs" data-trim data-noescape style="font-size: 35px;">
+                <span class="hljs-repl">julia&gt;</span> 1e308
+                1.0e308
+
+                <span class="hljs-repl">julia&gt;</span> 1e308 * 2.0
+                Inf
+
+                <span class="hljs-repl">julia&gt;</span> 5e-324 - 2e-324
+                5.0e-324
+
+                <span class="hljs-repl">julia&gt;</span> 5e-324 - 3e-324
+                0.0
+            </code></pre>
+          </section>
+
+          <section>
+            <div class="r-stack">
+              <div class="fragment semi-fade-out very-faded" data-fragment-index="2">
+                <h1>Nombres non représentables: représentation infinie</h1>
+                Nombre
+                <br>
+                <ul>
+                  <li>irrationel \(\left( \pi, e, \ldots \right)\): tout \( \beta \)</li>
+                  <lI>Rationel périodique \(\left( \frac 1 3, \ldots \right)\): dépend de \( \beta \)</li>
+                </ul>
+                <br>
+                <em>Proposition:</em> \( n = \frac a b \) (\( a \) et
+                \( b \) copremiers) a une représentation finie dans une
+                base \( \beta \) ssi \( \text{facteurs}(b) \subseteq
+                \text{facteurs}(\beta)\).
+              </div>
+
+              <div class="fragment fade-in" data-fragment-index="2" style="font-size: 100px;">
+                Comment "représenter" les nombres non représentables?
+              </div>
+
+              <div class="fragment fade-in" data-fragment-index="3">
+                <img src="assets/rounding.jpg" height="573" alt="Rounding">
+              </div>
+            </div>
+          </section>
+          <section>
+            <div class="r-stack">
+              <div class="fragment semi-fade-out" data-fragment-index="2">
+                <h1>Erreur absolue</h1>
+                <ul>
+                  <li>Manière naturelle de mesurer l'erreur d'arrondissement.</li>
+                  <li>Unité: <em>ulp</em> (<em>u</em>nit in the <em>l</em>ast <em>p</em>lace)</li>
+                </ul>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="2">
+                Si \( n \) est représenté par
+                $$
+                \beta^e \sum_{k = 0}^{p - 1} d_k \beta^{-k},
+                $$
+                l'erreur absolue est
+                $$
+                \beta^{p - 1} \sum_{k = p}^{\infty}d_k \beta^{-k} \text{ ulps}.
+                $$
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="3">
+                <h2>Fun fact:</h2>
+                <p>Si le résultat d'un calcul est "correct", l'erreur
+                  absolue avec la véritable réponse peut aller jusqu'à
+                  \( \frac 1 2 \) ulp!</p>
+              </div>
+            </div>
+          </section>
+          <section>
+            <div class="r-stack">
+              <div class="fragment semi-fade-out" data-fragment-index="2">
+                <h1>Erreur relative</h1>
+                <ul>
+                  <li>Pratique pour comparer la précision d'algorithmes</li>
+                  <li>Erreur absolue divisée par \( n \)</li>
+                  <li class="questionmark">Question: bornes pour l'erreur relative correspondant à \( \frac 1 2 \) ulp</li>
+                </ul>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="2">
+                <ul>
+                  <li class="column">\( \frac 1 2 \) ulp pour \( n \) en base
+                    \( \beta \) avec précision \( p \) correspond à</li>
+                  $$
+                  \frac 1 2 \beta^{e + 1 - p}
+                  $$
+                  <li>Pour obtenir cette erreur, \( \beta^e \leq n \leq \beta^{e + 1} \)</li>
+                  <li class="column">Donc, les bornes sont</li>
+                  $$
+                  \frac 1 2 \beta^{-p} \leq \frac 1 2 \text{ulp} \leq \frac 1 2 \beta^{1 - p}
+                  $$
+                </ul>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="3" style="max-width:95%">
+                <h2>&#x1f9d1;&#x1f3fd;&#x200d;&#x1f527;&#x1f32d;&#x1f9d1;&#x1f3fd;&#x200d;&#x1f527;</h2>
+                <ul>
+                  <li>\( \epsilon = \frac 1 2 \beta^{1 - p} \) est appelé <em>machine epsilon</em></li>
+                  <li>Vaut \( 2^{-53} \approx 1.1 \times 10^{-16} \) en précision double</li>
+                </ul>
+              </div>
+            </div>
           </section>
         </section>
         <section>
-          <h1>Code</h1>
-          <p>Are you ready for some awesome <code class="julia">content = "code"</code>?</p>
-          <pre class="julia"><code data-trim>
-              test = 41 + 1
-              function ret42(x::Int)
-              ret = 42 - x
-              ret + x
-              end
-          </code></pre>
-        </section>
-        <section>
-          Slide 2<br>
-          <a href="https://www.perdu.com">This is a link</a>
-        </section>
-        <section>
-          <h1>Title of the slide</h1>
-          <p>Sample unordered list:</p>
-          <ul>
-            <li>First item</li>
-            <li>Second item</li>
-          </ul>
-        </section>
-        <section>
-          <p>This integral is not as easy as \( 2 + \frac 4 2 = 4 \) &#x1F614;</p>
-          $$\begin{equation*}
-          \int_{-\infty}^{\infty} e^{\frac{-x^2}{2}} \text d x
-          \end{equation*}$$
-        </section>
-        <section data-markdown>
-          <textarea data-template>
-            ## Slide 1
-            A paragraph with some text and a [link](http://hakim.se).
-            ---
-            ## Slide 2
-            A reference<span class="reference">1</span>
-            ---
-            ## Slide 3
-            Another reference<span class="reference">3</span>
-          </textarea>
+          <section class="title-slide">
+            <h1>Retour sur les exemples</h1>
+          </section>
+          <section>
+            <h1>Addition de nombres rationels</h1>
+            <ul>
+              <li>\( 0.5 + 0.25 = \frac 1 2 + \frac{1}{2 \times 2}\)</li>
+              <li>Représentables en base \( \beta  = 2 \) &#x1f44d;</li>
+              <li>(Aussi en précision \( p = 53 \) &#x1f92b;)</li>
+              <li>\( 0.1 + 0.2 = \frac{1}{2 \times 5} + \frac 1 5\) &#x1f44e;</li>
+            </ul>
+          </section>
+          <section>
+            <div class="r-stack">
+              <div class="fragment semi-fade-out" data-fragment-index="2">
+                <h1>Polynômes de Wilkinson</h1>
+                <ul>
+                  <li>Problème <em>mal conditionné</em></li>
+                  <li>Petit changement dans un coefficient \( \Rightarrow \)
+                    (possiblement) grand changement dans les racines</li>
+                  <li>Pas un problème de représentation: ne peut être réglé
+                    en augmentant \( p \) &#x1f622;</li>
+                </ul>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="2">
+                <pre><code class="language-julia hljs" data-trim data-noescape style="font-size: 30px;">
+                    setprecision(500) do
+                        w20_big = wilkinson(BigFloat(20))
+                        global roots_w20_big = roots(w20_big)
+
+                        w20_big[19] -= 2.0^-23.0
+                        global roots_w20_big_pert = roots(w20_big)
+                    end
+                </code></pre>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="3">
+                <pre><code class="language-julia hljs" data-trim data-noescape style="font-size: 30px;">
+                    <span class="hljs-repl">julia&gt;</span> round.(roots_w20_big, digits = 4)
+                    20-element Vector{Complex{BigFloat}}:
+                    20.0 - 0.0im
+                    19.0 + 0.0im
+                    18.0 + 0.0im
+                    17.0 + 0.0im
+                    16.0 + 0.0im
+                    15.0 + 0.0im
+                    14.0 + 0.0im
+                    13.0 + 0.0im
+                    12.0 + 0.0im
+                    11.0 + 0.0im
+                    &vellip;
+                </code></pre>
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="4">
+                <pre><code class="language-julia hljs" data-trim data-noescape style="font-size: 30px;">
+                    <span class="hljs-repl">julia&gt;</span> mags = Float64.(abs.(roots_w20_big_pert))
+                    julia> round.(mags, digits = 4)
+                    20-element Vector{Float64}:
+                    20.8469
+                    19.5987
+                    19.5987
+                    14.2173
+                    14.2173
+                    16.9655
+                    16.9655
+                    11.9088
+                    11.9088
+                    &vellip;
+                </code></pre>
+              </div>
+            </div>
+          </section>
+          <section>
+            <h1>Suite logistique</h1>
+            <ul>
+              <li class="column">Topologiquement conjuguée au
+                <em>bit shift map</em> (décalage de Bernoulli)</li>
+              $$
+              x_n = \sin^2 2 \pi y_n
+              $$
+              <li>À chaque \( y_0 \) t.q. bsm périodique
+                correspond un \( x_0 \) t.q. la suite logistique l'est aussi</li>
+            </ul>
+          </section>
+          <section>
+            <div class="r-stack">
+              <div class="fragment semi-fade-out" data-fragment-index="2">
+                <h1>Bit shift map</h1>
+                Soit \( T \) un homomorphisme sur \( \{ 0, 1 \}^{\infty} \) défini par
+                $$
+                T(d_1, d_2, \cdots) \mapsto (d_2, d_3, \cdots).
+                $$
+                Par exemple:
+                $$
+                T(1, 1, 0, 1, \cdots) = (1, 0, 1, \cdots).
+                $$
+              </div>
+
+              <div class="fragment fade-in obox" data-fragment-index="2">
+
+              </div>
+            </div>
+          </section>
         </section>
 
         <section id="references">
           <section class="title-slide">
-            <h1>References</h1>
+            <h1>Références</h1>
           </section>
           <section>
             <ol>
-              <li>Croucha, D. J. M., &#38; Bodmer, W. F. (2020). Polygenic inheritance, GWAS, polygenic risk scores, and the search for functional variants. <i>Proceedings of the National Academy of Sciences of the United States of America</i>, <i>117</i>(32), 18924–18933. <a href="https://doi.org/10.1073/pnas.2005634117">https://doi.org/10.1073/pnas.2005634117</a></li>
-              <li>Meuwissen, T. H. E., Hayes, B. J., &#38; Goddard, M. E. (2001). Prediction of Total Genetic Value Using Genome-Wide Dense Marker Maps. <i>Genetics</i>, <i>157</i>(4), 1819–1829. <a href="https://doi.org/10.1093/GENETICS/157.4.1819">https://doi.org/10.1093/GENETICS/157.4.1819</a></li>
-            </ol>
-          </section>
-          <section>
-            <ol start = 3>
-              <li>Slatkin, M. (2008). Exchangeable models of complex inherited diseases. <i>Genetics</i>, <i>179</i>(4), 2253–2261. <a href="https://doi.org/10.1534/genetics.107.077719">https://doi.org/10.1534/genetics.107.077719</a></li>
-              <li>Visscher, P. M., &#38; Wray, N. R. (2016). Concepts and Misconceptions about the Polygenic Additive Model Applied to Disease. <i>Human Heredity</i>, <i>80</i>(4), 165–170. <a href="https://doi.org/10.1159/000446931">https://doi.org/10.1159/000446931</a></li>
+              <li>Goldberg, D. (1991). What every computer scientist should know about floating-point arithmetic. <i>ACM Computing Surveys (CSUR)</i>, <i>23</i>(1), 5–48. <a href="https://doi.org/10.1145/103162.103163">https://doi.org/10.1145/103162.103163</a></li>
+              <li>Wilkinson, J. H. (1959). The evaluation of the zeros of ill-conditioned polynomials. Part I. <i>Numerische Mathematik 1959 1:1</i>, <i>1</i>(1), 150–166. <a href="https://doi.org/10.1007/BF01386381">https://doi.org/10.1007/BF01386381</a></li>
             </ol>
           </section>
         </section>
@@ -96,13 +549,11 @@
     </div>
 
     <div id="logo"><p>
-        Author (Institution)
+        <a href="https://www.patrickfournier.ca">P. Fournier</a> (<a href="https://statqam.uqam.ca/">STATQAM</a> &mdash; <a href="https://uqam.ca/">UQAM</a>)</a>
         <span class="separator"></span>
-        Session
+        Séminaire AECSM
         <span class="separator"></span>
-        Event (Venue)
-        <span class="separator"></span>
-        Date
+        9 novembre 2022
     </p></div>
 
     <div id="qrcode" alt="Slides"></div>
@@ -117,7 +568,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="dist/perso.js"></script>
-    <script type="text/javascript">qrcode.makeCode("www.patrickfournier.ca");</script>
+    <script type="text/javascript">qrcode.makeCode("www.patrickfournier.ca/talk-floating-point-numbers");</script>
     <script>
       // More info about initialization & config:
       // - https://revealjs.com/initialization/
