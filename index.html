@@ -51,10 +51,10 @@
           <section>
             <h1>Addition de nombre rationels</h1>
             <pre><code class="language-julia hljs" data-trim data-noescape>
-                <span class="hljs-repl">julia&gt;</span>  0.5 + 0.25 == 0.75
+                <span class="hljs-repl">julia&gt;</span> 0.5 + 0.25 == 0.75
                 true
 
-                <span class="hljs-repl">julia&gt;</span>  0.1 + 0.2 == 0.3
+                <span class="hljs-repl">julia&gt;</span> 0.1 + 0.2 == 0.3
                 false
             </code></pre>
           </section>
@@ -132,7 +132,7 @@
 
             <div class="fragment fade-in obox" data-fragment-index="6">
               <pre><code class="language-julia hljs" data-trim data-noescape style="font-size: 30px;">
-                  <span class="hljs-repl">julia&gt;</span>  round.(abs.(roots(w20)), digits = 4)
+                  <span class="hljs-repl">julia&gt;</span> round.(abs.(roots(w20)), digits = 4)
                   20-element Vector{Float64}:
                   20.8469
                   19.5987
@@ -217,7 +217,7 @@
                 <h1>Nombre entiers: système binaire pondéré</h1>
                 <ul>
                   <li>Ordinateur moderne: 64 bits</li>
-                  <li>\( 2^{64} \approx 10^{19} \) valeurs différentes</li>
+                  <li>\( 2^{64} \approx 10^{19} \) valeurs différentes (un peu plus que &#35; grains de sable sur Terre)</li>
                   <li>Non signé: 64 bits pour le nombre (\( 0 \text{ à } 2^{64} -1 \))</li>
                   <li>Signé: 63 bits pour le nombre, 1 bit pour le signe (\( -2^{63} \text{ à } 2^{63} - 1 \))</li>
                 </ul>
@@ -514,23 +514,49 @@
             </ul>
           </section>
           <section>
+            <h1>Bit shift map</h1>
+            Soit \( T \) un homomorphisme sur \( \{ 0, 1 \}^{\infty} \)
+            défini par
+            $$
+            T(d_1, d_2, \cdots) \mapsto (d_2, d_3, \cdots).
+            $$
+            Par exemple:
+            $$
+            T(1, 1, 0, 1, \cdots) = (1, 0, 1, \cdots).
+            $$
+          </section>
+          <section>
             <div class="r-stack">
               <div class="fragment semi-fade-out" data-fragment-index="2">
-                <h1>Bit shift map</h1>
-                Soit \( T \) un homomorphisme sur \( \{ 0, 1 \}^{\infty} \) défini par
-                $$
-                T(d_1, d_2, \cdots) \mapsto (d_2, d_3, \cdots).
-                $$
-                Par exemple:
-                $$
-                T(1, 1, 0, 1, \cdots) = (1, 0, 1, \cdots).
-                $$
+                <h1>Dualité entre BSM et [0, 1]</h1>
+                <ul style="font-size: 32px;">
+                  <li>Pour une trajectoire d'un
+                    processus de Bernoulli \(D = \{d_k \}_{k \in \mathbb N}\),
+                    on définit
+                    $$
+                    y_n = \sum_{k = n + 1}^{\infty} d_k 2^{-k}
+                    $$
+                    une bijection dans \( [0, 1] \)</li>
+                  <li>\( y_n \leftrightarrow T^n(d_1, d_2, \ldots)\)</li>
+                  <li>On voit que \((D, T(D), T^2(D), \ldots)\) périodique ssi \( y_0 \) rationel</li>
+                </ul>
               </div>
 
               <div class="fragment fade-in obox" data-fragment-index="2">
-
+                <ul>
+                  <li>\( x_0 \sim \mathcal U(0, 1) \Rightarrow \) non
+                    périodique presque sûrement</li>
+                  <li>Impossible à simuler car nombres à virgule flottante <em>rationels</em></li>
+                  <li>Toute simulation de la suite logistique est
+                    éventuellement périodique</li>
+                  <li>Encore plus fort: converge à 0</li>
+                </ul>
               </div>
             </div>
+          </section>
+          <section>
+            <h1>Code Julia</h1>
+            Disponible <a href="https://github.com/ps-pat/talk-floating-point-numbers/blob/master/assets/code.jl">ici</a>!
           </section>
         </section>
 
